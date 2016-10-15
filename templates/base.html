@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Quotes</title>
+	<meta charset="utf-8">
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+</head>
+<body>
+	{% if session.logged_in %}
+		<form action="{{url_for('logout')}}">
+			<input type="submit" name="logout" value="Logg ut">
+		</form>
+
+		<form action="{{url_for('home')}}">
+			<input type="submit" name="home" value="Hjem">
+		</form>
+	{% endif %}
+	{% if session.admin %}
+		<form action="{{url_for('delete_all_quotes')}}">
+			<input type="submit" name="delete" value="Slett alle sitater">
+		</form>
+
+		<form action="{{url_for('add_new_user')}}">
+			<input type="submit" name="new_user" value="Legg til bruker">
+		</form>
+	{% endif %}
+
+	{% if success %}
+		<p>{{success}}</p>
+	{% endif %}
+
+	{% if error %}
+		<p>{{error}}</p>
+	{% endif %}
+
+	{% block body %}
+
+	{% endblock %}
+	
+	{% block scripts %}
+
+	{% endblock %}
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block body %}
+	<h3>You are now logged in kis.</h3>
+
+	<form action="{{url_for('add_quote')}}" method="POST">
+		<input type="text" name="quote" tabindex="1">
+		<input type="submit" name="Lagre">
+	</form>
+
+	<button id="my-btn">
+		Trykk her
+	</button>
+
+	<h2>Sitater</h2>
+	<table>
+		{% for quote in quotes %}
+			<tr id="quote_{{quote.id}}">
+				<td>{{quote.quote}}</td>
+				<td>{{quote.date}}</td>
+				<td>{{quote.create_by}}</td>
+				{% if session.admin %}
+					<td>
+						<form action="{{url_for('delete_one_quote')}}" method="POST">
+							<input type="text" name="quote_id" value="{{quote.id}}" hidden>
+							<input type="submit" name="submit" value="Slett">
+						</form>
+					</td>
+				{% endif %}
+			</tr>
+		{% endfor %}
+	</table>
+	{% block scripts %}
+	{% endblock %}
+		<script type=text/javascript src="{{url_for('static', filename='js/home.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h3>Dette er innloggingssiden. takk for meg.</h3>
+
+<form action="{{url_for('login')}}" method="POST">
+	<input type="text" name="username" tabindex="1">
+	<input type="password" name="password" tabindex="2">
+	<input type="submit" name="login" value="Logg inn" tabindex="3">
+</form>
+
+<h2>Quotes</h2>
+<table>
+	{% for quote in quotes %}
+		<tr>
+			<td>{{quote.quote}}</td>
+			<td>{{quote.date}}</td>
+			<td>{{quote.create_by}}</td>
+		</tr>
+	{% endfor %}
+</table>
+
+{% endblock %}
