@@ -31,8 +31,12 @@
 			<input type="submit" name="delete" value="Slett alle sitater">
 		</form>
 
-		<form action="{{url_for('add_new_user')}}">
+		<!-- <form action="{{url_for('add_new_user')}}">
 			<input type="submit" name="new_user" value="Legg til bruker">
+		</form> -->
+
+		<form action="{{url_for('show_all_users')}}">
+			<input type="submit" name="all_users" value="Vis alle brukere">
 		</form>
 	{% endif %}
 

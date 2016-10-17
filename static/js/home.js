@@ -12,10 +12,12 @@ ReactDOM.render(
 );
 
 var counter = 1;
-
+// http://tech.oyster.com/using-react-and-jquery-together/
+// Hvordan koble jQuery og react sammen i en
 var Quotes = React.createClass({
 	getInitialState: function() {
 		var self = this;
+		this.loadData();
 		setInterval(function() {
 			// console.log("Starting interval kis.");
 			$.ajax({
@@ -35,7 +37,8 @@ var Quotes = React.createClass({
 			});
 		}, 2000);
 		return {
-			quotes: []
+			quotes: [],
+			admin: false
 		}
 	},
 	loadData: function() {
@@ -47,14 +50,16 @@ var Quotes = React.createClass({
 				// console.log("YAY! RESPONSE!");
 				// console.log(response);
 				self.setState({
-					quotes: response
+					quotes: response.quotes,
+					admin: response.admin
 				});
 				// return response;
 			},
 			error: function(error) {
 				console.log("AAAH, error kis.");
 				return {
-					quotes: []
+					quotes: [],
+					admin: false
 				}
 			}
 		});
@@ -71,8 +76,7 @@ var Quotes = React.createClass({
 			<div>
 				<button type="button" onClick={this.loadData}>Last sitater</button> 
 				<table>
-					<thead><tr><th>LOL</th></tr></thead>
-					<List quotes={this.state.quotes} />
+					<List quotes={this.state.quotes} admin={this.state.admin} />
 				</table>
 			</div>
 		);
@@ -80,8 +84,21 @@ var Quotes = React.createClass({
 });
 
 
+var DeleteButton = React.createClass({
+	render: function() {
+		if (this.props.admin) {
+			return (<button id={this.props.id} className="delete-btn">Slett</button>)
+		}
+		else {
+			return null;
+		}
+	}
+});
+
+
 var List = React.createClass({
 	render: function() {
+		var admin = this.props.admin;
 		return (
 			<tbody>
 				{
@@ -89,6 +106,7 @@ var List = React.createClass({
 						return <tr key={item.id}>
 							<td>{item.quote}</td>
 							<td>{item.date}</td>
+							<td><DeleteButton admin={admin} id={item.id} /></td>
 						</tr>
 					})
 				}
@@ -135,6 +153,20 @@ $(function() {
 			type: "POST",
 			url: "/ping",
 			// contentType: "application/json;charset=UTF-8",
+			success: function(result) {
+				console.log(result);
+			}
+		});
+	});
+
+
+	$(".delete-btn").click(function(e) {
+		// console.log(e.target.id);
+		$.ajax({
+			type: "POST",
+			url: "/delete_quote",
+			data: JSON.stringify({id: e.target.id}),
+			contentType: "application/json;charset=UTF-8",
 			success: function(result) {
 				console.log(result);
 			}

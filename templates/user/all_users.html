@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block body %}
+	
+	<h3>Legg til bruker</h3>
+	<form action="{{url_for('add_new_user')}}" method="POST">
+		<input type="text" name="username">
+		<input type="password" name="password">
+		<input type="checkbox" name="admin">
+		<input type="submit" name="submit">
+	</form>
+
+	<h3>Alle brukere</h3>
+	<table>
+		<thead>
+			<tr>
+				<th>Brukernavn</th>
+				<th>Admin</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for user in users %}
+			<tr>
+				<td>{{user.username}}</td>
+				<td>{{user.admin}}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	
+
+	{% block scripts %}
+	{% endblock %}
+		<!-- <script type=text/babel src="{{url_for('static', filename='js/home.js') }}"></script> -->
+{% endblock %}

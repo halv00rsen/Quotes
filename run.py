@@ -107,10 +107,17 @@ def add_quote():
 	return redirect("home")
 
 
+@app.route("/all_users")
+@is_admin
+def show_all_users():
+	return flask.render_template("user/all_users.html", users=[dict(username=a[0], admin=a[2]) for a in flask.g.db.execute("select * from User").fetchall()])
+
+
 @app.route("/delete_all")
 @is_admin
 def delete_all_quotes():
 	flask.g.db.execute("delete from Quote")
+	flask.g.db.execute("update UpdateQuotes set mustUpdate=?", [True])
 	flask.g.db.commit()
 	return redirect("home")
 
@@ -118,14 +125,19 @@ def delete_all_quotes():
 @app.route("/delete_quote", methods=["POST"])
 @is_admin
 def delete_one_quote():
-	if "quote_id" in flask.request.form:
-		try:
-			quote_id = flask.request.form["quote_id"]
-			flask.g.db.execute("delete from Quote where id = ?", [quote_id])
-			flask.g.db.commit()
-		except ValueError as e:
-			pass
-	return redirect("home")
+	req = flask.request
+	try:
+		json = req.get_json()
+		quote_id = json.get("id")
+		if type(quote_id) != str or not quote_id:
+			return flask.jsonify(success=False, error="Wrong deletion id.")
+		flask.g.db.execute("delete from Quote where id = ?", [quote_id])
+		flask.g.db.execute("update UpdateQuotes set mustUpdate=?", [True])
+		flask.g.db.commit()
+		return flask.jsonify(success=True, message="The quote was deleted.")
+	except:
+		pass
+	return flask.jsonify(success=False, message="No json provided.")
 
 
 @app.route("/home")
@@ -160,7 +172,10 @@ def get_quotes_api():
 				return flask.jsonify(quotes[start:end])
 		except Exception:
 			pass
-	return flask.jsonify(get_all_quotes()["quotes"])
+	# print(get_all_quotes())
+	admin = session.get("admin")
+	admin = admin if admin is not None else False
+	return flask.jsonify(dict(quotes=get_all_quotes()["quotes"], admin=admin))
 
 
 @app.route("/ping", methods=["GET", "POST"])

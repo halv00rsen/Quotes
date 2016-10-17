@@ -18,4 +18,4 @@ create table Quote(
 create table UpdateQuotes(
 	ip varchar(30) primary key,
 	mustUpdate boolean
-)
+);
