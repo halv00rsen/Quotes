@@ -33,6 +33,7 @@ def is_admin(f):
 
 @app.route("/")
 def main():
+	print(flask.sessions)
 	if is_logged_in():
 		return redirect("home")
 	return flask.redirect(flask.url_for("login"))
@@ -90,7 +91,18 @@ def add_quote():
 		 # INSERT INTO people (first_name, last_name) VALUES ("John", "Smith")
 		flask.g.db.execute("insert into Quote(create_by, quote, date, id) values (?,?,?,?)", [session["user"]["username"], quote.strip(), int(time.time()), str(uuid4())])
 		flask.g.db.commit()
-	else:
+	try:
+		json = req.get_json()
+		quote = json.get("quote")
+		if type(quote) != str or len(quote.strip()) == 0:
+			return flask.jsonify(success=False, error="Wrong type or empty string passed into the api.")
+		flask.g.db.execute("insert into Quote(create_by, quote, date, id) values (?,?,?,?)", [session["user"]["username"], quote.strip(), int(time.time()), str(uuid4())])
+		flask.g.db.execute("update UpdateQuotes set mustUpdate=?", [True])
+		flask.g.db.commit()
+		# print("LOLASKIS")
+		return flask.jsonify(success=True, message="The quote was saved.")
+	except Exception as e:
+		print(e)
 		error = "Wrong input fields in form."
 	return redirect("home")
 
@@ -130,7 +142,8 @@ def logout():
 	session.pop("admin", None)
 	return redirect("login")
 
-@app.route("/api/v1.0/quotes", methods=["GET"])
+
+@app.route("/api/quotes", methods=["GET"])
 def get_quotes_api():
 	form = flask.request.args
 	if "start" in form and "end" in form:
@@ -148,6 +161,22 @@ def get_quotes_api():
 		except Exception:
 			pass
 	return flask.jsonify(get_all_quotes()["quotes"])
+
+
+@app.route("/ping", methods=["GET", "POST"])
+def ping_server():
+	lol = flask.g.db.execute("select * from UpdateQuotes").fetchall()
+	# print(lol)
+	data = flask.g.db.execute("select * from UpdateQuotes where ip=?", [flask.request.remote_addr]).fetchall()
+	if data:
+		if data[0][1]:
+			flask.g.db.execute("update UpdateQuotes set mustUpdate=0 where ip=?", [flask.request.remote_addr])
+			flask.g.db.commit()
+			return flask.jsonify(update=True)
+	else:
+		flask.g.db.execute("insert into UpdateQuotes(mustUpdate, ip) values (?,?)", [False, flask.request.remote_addr])
+		flask.g.db.commit()
+	return flask.jsonify(update=False)
 
 
 @app.context_processor
@@ -198,4 +227,4 @@ def teardown_request(exception):
 
 
 if __name__ == "__main__":
-	app.run(debug=True)
+	app.run(host="0.0.0.0", debug=True)

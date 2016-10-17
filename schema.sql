@@ -13,3 +13,9 @@ create table Quote(
 	quote text not null,
 	date integer not null
 );
+
+
+create table UpdateQuotes(
+	ip varchar(30) primary key,
+	mustUpdate boolean
+)

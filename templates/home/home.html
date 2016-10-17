@@ -3,17 +3,12 @@
 {% block body %}
 	<h3>You are now logged in kis.</h3>
 
-	<form action="{{url_for('add_quote')}}" method="POST">
-		<input type="text" name="quote" tabindex="1">
-		<input type="submit" name="Lagre">
+	<form>
+		<input type="text" name="url" id="save-url" value="{{url_for('add_quote')}}" hidden>
+		<input type="text" name="quote" tabindex="1" id="save-quote-name">
+		<input type="submit" name="Lagre" id="save-quote">
 	</form>
-
-	<button id="my-btn">
-		Trykk her
-	</button>
-
-	<h2>Sitater</h2>
-	<table>
+	<!-- <table>
 		{% for quote in quotes %}
 			<tr id="quote_{{quote.id}}">
 				<td>{{quote.quote}}</td>
@@ -29,8 +24,15 @@
 				{% endif %}
 			</tr>
 		{% endfor %}
-	</table>
+	</table> -->
+	<button id="pingbtn">Ping</button>
+	<div id="test-id">
+		
+	</div>
+	<div id="app-data">
+		
+	</div>
 	{% block scripts %}
 	{% endblock %}
-		<script type=text/javascript src="{{url_for('static', filename='js/home.js') }}"></script>
+		<script type=text/babel src="{{url_for('static', filename='js/home.js') }}"></script>
 {% endblock %}
