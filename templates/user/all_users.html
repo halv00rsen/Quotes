@@ -23,6 +23,11 @@
 			<tr>
 				<td>{{user.username}}</td>
 				<td>{{user.admin}}</td>
+				<td>
+					<button class="delete-usr-btn" id="{{user.username}}">
+						Slett
+					</button>
+				</td>
 			</tr>
 		{% endfor %}
 		</tbody>
@@ -31,5 +36,6 @@
 
 	{% block scripts %}
 	{% endblock %}
+	<script type=text/babel src="{{url_for('static', filename='js/all_users.js') }}"></script>
 		<!-- <script type=text/babel src="{{url_for('static', filename='js/home.js') }}"></script> -->
 {% endblock %}

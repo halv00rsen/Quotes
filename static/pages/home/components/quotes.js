@@ -1,19 +1,4 @@
 
-var Test = React.createClass({
-	render: function() {
-		return (<h3>Det funker faktisk!</h3>)
-	}
-});
-
-
-ReactDOM.render(
-	<Test/>,
-	document.getElementById("test-id")
-);
-
-var counter = 1;
-
-
 function delButtonJquery(id) {
   var button = $('<button class="delete-btn" id=' + id + '>Slett</button>');
   
@@ -201,10 +186,10 @@ var List = React.createClass({
 });
 
 
-ReactDOM.render(
-	<Quotes />,
-	document.getElementById("app-data")
-);
+// ReactDOM.render(
+// 	<Quotes />,
+// 	document.getElementById("app-data")
+// );
 
 
 $(function() {
@@ -243,33 +228,7 @@ $(function() {
 			}
 		});
 	});
-
-
-	// $(".delete-btn").click(function(e) {
-	// 	// console.log(e.target.id);
-	// 	$.ajax({
-	// 		type: "POST",
-	// 		url: "/delete_quote",
-	// 		data: JSON.stringify({id: e.target.id}),
-	// 		contentType: "application/json;charset=UTF-8",
-	// 		success: function(result) {
-	// 			console.log(result);
-	// 		}
-	// 	});
-	// });
-
-	// setInterval(function() {
-	// 	console.log("Starting interval kis.");
-	// 	$.ajax({
-	// 		type: "POST",
-	// 		url: "/ping",
-	// 		// contentType: "application/json;charset=UTF-8",
-	// 		success: function(result) {
-	// 			if (result.update) {
-	// 				console.log("You should update kis!");
-	// 			}
-	// 		}
-	// 	});
-	// }, 2000);
-
 });
+
+export default Quotes;
+

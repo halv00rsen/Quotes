@@ -31,12 +31,20 @@ def is_admin(f):
 	return is_admin_logged_in
 
 
+
+
 @app.route("/")
 def main():
-	print(flask.sessions)
+	# print(flask.sessions)
 	if is_logged_in():
 		return redirect("home")
 	return flask.redirect(flask.url_for("login"))
+
+
+@app.route("/app", methods=["GET"])
+@logged_in
+def single_app():
+	return flask.render_template("app.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -146,6 +154,26 @@ def home():
 	return flask.render_template("home/home.html")
 
 
+@app.route("/delete_user", methods=["POST"])
+@is_admin
+def delete_user():
+	req = flask.request
+	try:
+		json = req.get_json()
+		username = json.get("username")
+		if username == session.get("username") or username is not None:
+			return flask.jsonify(success=False, message="You cannot delete your self.")
+		users = flask.g.db.execute("select * from User where username=?", [username]).fetchall()
+		if not users:
+			return flask.jsonify(success=False, message="The user '{}' do not exist.".format(username))
+		flask.g.db.execute("delete from User where username=?", [username])
+		flask.g.db.commit()
+		return flask.jsonify(success=True, message="The user {} was deleted from the system.".format(username))
+	except Exception as e:
+		pass
+	return flask.jsonify(success=False, message="There is something wrong with your inputs.")
+
+
 @app.route("/logout")
 @logged_in
 def logout():
@@ -153,6 +181,15 @@ def logout():
 	session.pop("logged_in", None)
 	session.pop("admin", None)
 	return redirect("login")
+
+
+@app.route("/get_user_data")
+def get_user_data():
+	logged_in = session.get("logged_in")
+	logged_in = logged_in if logged_in is not None else False
+	user = session.get("user")
+	admin = session.get("admin")
+	return flask.jsonify(admin=admin, user=user, logged_in=logged_in)
 
 
 @app.route("/api/quotes", methods=["GET"])
