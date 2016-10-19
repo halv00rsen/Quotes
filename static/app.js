@@ -16,6 +16,7 @@ var App = React.createClass({
     		<ul role="nav">
     			<li><Link to="/app/home">Hjem</Link></li>
     			<li><Link to="/app/users">Brukere</Link></li>
+          <li><a href="/logout">Logg ut</a></li>
     		</ul>
 
     		{this.props.children || <Home/>}

@@ -4,73 +4,77 @@ var React = require("react");
 var ReactDOM = require("react-dom");
 var isPinging = require("./ping_button.js").isPinging
 
-function delButtonJquery(id) {
-  var button = $('<button class="delete-btn" id=' + id + '>Slett</button>');
-  
-  // handle click event
-  $(button).on('click', function(event) {
-    event.preventDefault();
-    $.ajax({
-		type: "POST",
-		url: "/delete_quote",
-		data: JSON.stringify({id: event.target.id}),
-		contentType: "application/json;charset=UTF-8",
-		success: function(result) {
-			console.log(result);
-		}
-	});
-  });
-
-  return button;
-}
 
 // http://tech.oyster.com/using-react-and-jquery-together/
 // Hvordan koble jQuery og react sammen i en
 var Quotes = React.createClass({
+	pingFunction: function() {
+		// console.log("Starting interval kis.");
+		if (!isPinging())
+			return;
+		$.ajax({
+			type: "POST",
+			url: "/ping",
+			// contentType: "application/json;charset=UTF-8",
+			success: function(result) {
+				if (result.update) {
+					console.log("Will update view.");
+					this.loadData();
+				}
+			}.bind(this),
+			error: function(error) {
+				// console.log(error);
+				console.log("Lost connection with remote server.");
+			}
+		});
+	},
+
+	componentDidMount: function() {
+		console.log("Mounting interval, starting ping.");
+	    this.loadInterval = setInterval(this.pingFunction, 2000);
+	    this.props.callback.update = function(e) {
+	    	if (!this.loadInterval) {
+	    		return;
+	    	}
+	    	var newQuotes = [e].concat(this.state.quotes);
+	    	this.setState({
+	    		quotes: newQuotes
+	    	})
+	    }.bind(this);
+	},
+
+	componentWillUnmount: function() {
+		console.log("Unmounting quotes. Stop pinging.");
+	    this.loadInterval && clearInterval(this.loadInterval);
+	    this.loadInterval = false;
+	},
+
 	getInitialState: function() {
 		console.log("Loading quotes.");
-		var self = this;
 		this.loadData();
-		setInterval(function() {
-			// console.log("Starting interval kis.");
-			if (!isPinging())
-				return;
-			$.ajax({
-				type: "POST",
-				url: "/ping",
-				// contentType: "application/json;charset=UTF-8",
-				success: function(result) {
-					if (result.update) {
-						console.log("Will update view.");
-						self.loadData();
-					}
-				},
-				error: function(error) {
-					// console.log(error);
-					console.log("Lost connection with remote server.");
-				}
-			});
-		}, 2000);
 		return {
 			quotes: [],
 			admin: false
 		}
 	},
+
 	loadData: function() {
-		var self = this;
 		$.ajax({
 			url: "/api/quotes",
 			type: "GET",
 			success: function(response) {
-				// console.log("YAY! RESPONSE!");
-				// console.log(response);
+				if (!this.loadInterval) {
+					console.log("No mount here, so no new qotes.");
+					return;
+				}
+
 				console.log("Quotes loaded.");
-				self.setState({
+				this.setState({
 					quotes: response.quotes,
 					admin: response.admin
 				});
 				// return response;
-			},
+			}.bind(this),
 			error: function(error) {
 				console.log("AAAH, error kis.");
 				return {
@@ -81,13 +85,6 @@ var Quotes = React.createClass({
 		});
 	},
 	render: function() {
-		// setInterval(this.loadData, 10000);
-		// var self = this;
-		// setInterval(function() {
-		// 	console.log("Data blir nå lastet " + counter);
-		// 	counter++;
-		// 	self.loadData();
-		// }, 10000);
 		var admin = this.state.admin;
 		return (
 			<div>
@@ -95,10 +92,7 @@ var Quotes = React.createClass({
 				<table>
 					<tbody>
 						{
-							// console.log("Load data kis.");
 							this.state.quotes.map(function(item) {
-								// console.log(item);
-								// console.log("HEISANN");
 								return (
 									<Row key={item.id} admin={admin} item={item} />
 								);
@@ -113,67 +107,59 @@ var Quotes = React.createClass({
 
 
 var Row = React.createClass({
-	componentDidMount: function() {
-		if (this.props.admin) {
-    		this.renderDeleteButton();
-		}
-  	},
-  	componentDidUpdate: function() {
-  		if (this.props.admin) {
-    		this.renderDeleteButton();
-  		}
-  	},
+	getInitialState: function() {
+		return {show: true};
+	},
+
+	hideRow: function() {
+		this.setState({show: false});
+	},
+
 	render: function() {
 		var item = this.props.item;
-		// console.log(item);
+
+		if (!this.state.show) {
+			return null;
+		}
+
 		return (
 			<tr>
 				<td>{item.quote}</td>
 				<td>{item.date}</td>
 				<td>
-					<span className="button-container" ref="buttonContainer"></span>
+					<DeleteButton id={this.props.item.id} admin={this.props.admin} deleteRow={this.hideRow}/>
 				</td>
 			</tr>
 		);
-	},
-	renderDeleteButton: function() {
-		$(this.refs.buttonContainer).html(delButtonJquery(this.props.item.id));
 	}
 });
 
 
 var DeleteButton = React.createClass({
+	deleteQuote: function() {
+		$.ajax({
+			type: "POST",
+			url: "/delete_quote",
+			data: JSON.stringify({id: this.props.id}),
+			contentType: "application/json;charset=UTF-8",
+			success: function(result) {
+				if (result.success) {
+					this.props.deleteRow();
+				}
+				if (result.message) {
+					console.log(result.message);
+				}
+			}.bind(this)
+		});
+	},
+
 	render: function() {
 		if (this.props.admin) {
-
-			return (<button id={this.props.id} className="delete-btn">Slett</button>);
+			return (<button onClick={this.deleteQuote}>Slett</button>);
 		}
 		else {
 			return null;
 		}
-	}
-});
-
-
-var List = React.createClass({
-	render: function() {
-		var admin = this.props.admin;
-		return (
-			<tbody>
-				{
-					this.props.quotes.map(function(item) {
-						return <tr key={item.id}>
-							<td>{item.quote}</td>
-							<td>{item.date}</td>
-							<td>
-								<span className="button-container" ref="buttonContainer"></span>
-							</td>
-							<td><DeleteButton admin={admin} id={item.id} /></td>
-						</tr>
-					})
-				}
-			</tbody>
-		);
 	}
 });
 

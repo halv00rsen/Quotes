@@ -121,11 +121,13 @@ def add_quote():
 		quote = json.get("quote")
 		if type(quote) != str or len(quote.strip()) == 0:
 			return flask.jsonify(success=False, error="Wrong type or empty string passed into the api.")
-		flask.g.db.execute("insert into Quote(create_by, quote, date, id) values (?,?,?,?)", [session["user"]["username"], quote.strip(), int(time.time()), str(uuid4())])
+		date = int(time.time())
+		quote_id = str(uuid4())
+		flask.g.db.execute("insert into Quote(create_by, quote, date, id) values (?,?,?,?)", [session["user"]["username"], quote.strip(), date, quote_id])
 		flask.g.db.execute("update UpdateQuotes set mustUpdate=?", [True])
 		flask.g.db.commit()
 		# print("LOLASKIS")
-		return flask.jsonify(success=True, message="The quote was saved.")
+		return flask.jsonify(success=True, message="The quote was saved.", quote=dict(create_by=session["user"]["username"], date=time.asctime(time.localtime(date)), id=quote_id, quote=quote.strip()))
 	except Exception as e:
 		print(e)
 		error = "Wrong input fields in form."
