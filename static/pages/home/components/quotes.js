@@ -1,4 +1,9 @@
 
+var $ = require('jquery');
+var React = require("react");
+var ReactDOM = require("react-dom");
+var isPinging = require("./ping_button.js").isPinging
+
 function delButtonJquery(id) {
   var button = $('<button class="delete-btn" id=' + id + '>Slett</button>');
   
@@ -19,30 +24,16 @@ function delButtonJquery(id) {
   return button;
 }
 
-
-var getData = true;
-
-$(function() {
-	$("#stopPing").on("click", function(e) {
-		getData = !getData;
-		// console.log(e.target.;
-		if (getData) {
-			$(this).html("Stopp ping");
-		} else {
-			$(this).html("Start ping");
-		}
-	});
-});
-
 // http://tech.oyster.com/using-react-and-jquery-together/
 // Hvordan koble jQuery og react sammen i en
 var Quotes = React.createClass({
 	getInitialState: function() {
+		console.log("Loading quotes.");
 		var self = this;
 		this.loadData();
 		setInterval(function() {
 			// console.log("Starting interval kis.");
-			if (!getData)
+			if (!isPinging())
 				return;
 			$.ajax({
 				type: "POST",
@@ -73,6 +64,7 @@ var Quotes = React.createClass({
 			success: function(response) {
 				// console.log("YAY! RESPONSE!");
 				// console.log(response);
+				console.log("Quotes loaded.");
 				self.setState({
 					quotes: response.quotes,
 					admin: response.admin
@@ -142,7 +134,7 @@ var Row = React.createClass({
 					<span className="button-container" ref="buttonContainer"></span>
 				</td>
 			</tr>
-		)
+		);
 	},
 	renderDeleteButton: function() {
 		$(this.refs.buttonContainer).html(delButtonJquery(this.props.item.id));
@@ -181,54 +173,8 @@ var List = React.createClass({
 					})
 				}
 			</tbody>
-		)
+		);
 	}
 });
 
-
-// ReactDOM.render(
-// 	<Quotes />,
-// 	document.getElementById("app-data")
-// );
-
-
-$(function() {
-
-	$("#save-quote").click(function(e) {
-		e.preventDefault();
-		$.ajax({
-			type: "POST",
-			url: $("#save-url").val(),
-			data: JSON.stringify({
-				quote: $("#save-quote-name").val()
-			}),
-			contentType: "application/json;charset=UTF-8",
-			success: function(result) {
-				if (result.success) {
-					$("#save-quote-name").val("");
-					console.log("The quote was saved.");
-				} else {
-					console.log(result.error);
-				}
-			},
-			error: function(error) {
-				console.log(error);
-			}
-		});
-	});
-
-
-	$("#pingbtn").click(function() {
-		$.ajax({
-			type: "POST",
-			url: "/ping",
-			// contentType: "application/json;charset=UTF-8",
-			success: function(result) {
-				console.log(result);
-			}
-		});
-	});
-});
-
-export default Quotes;
-
+module.exports = Quotes;

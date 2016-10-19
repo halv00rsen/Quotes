@@ -1,38 +1,37 @@
 
-import Home from './home/home.js'
+var Home = require("./pages/home/home.js");
+var Users = require("./pages/users/index.js");
+var React = require("react");
+var ReactDOM = require("react-dom");
+var ReactRouter = require("react-router");
+
+
+var { Router, Route, IndexRoute, IndexLink, Link, browserHistory } = ReactRouter;
 
 var App = React.createClass({
   render: function() {
     return (
-      <div>
-        <h1>Quotes</h1>
-        <nav>
-	        <ul className="header">
-	          <li>Home</li>
-	          <li>Stuff</li>
-	          <li>Contact</li>
-	        </ul>
-	    </nav>
-        <div className="content">
- 			{this.props.children}
-        </div>
-      </div>
-    )
+    	<div>
+    		<h1>Sitater</h1>
+    		<ul role="nav">
+    			<li><Link to="/app/home">Hjem</Link></li>
+    			<li><Link to="/app/users">Brukere</Link></li>
+    		</ul>
+
+    		{this.props.children || <Home/>}
+
+    	</div>
+    );
   }
 });
 
-var { Router,
-      Route,
-      IndexRoute,
-      IndexLink,
-      Link } = ReactRouter;
-
 
 ReactDOM.render(
-  <Router>
-    <Route path="/" component={App}>
-    	<Home />
-    </Route>
-  </Router>,
-  document.getElementById("application")
+	<Router history={browserHistory}>
+    	<Route path="/app" component={App}>
+    		<Route path="/app/home" component={Home}/>
+    		<Route path="/app/users" component={Users}/>
+    	</Route>
+  	</Router>,
+  	document.getElementById("application")
 );

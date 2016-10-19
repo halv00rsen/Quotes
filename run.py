@@ -31,6 +31,22 @@ def is_admin(f):
 	return is_admin_logged_in
 
 
+def is_admin_api(f):
+	@wraps(f)
+	def is_admin_logged_in(*args, **kwargs):
+		if "admin" in session and session["admin"]:
+			return f(*args, **kwargs)
+		return flask.jsonify(success=False, message="You do not have access.")
+	return is_admin_logged_in
+
+
+def logged_in_api(f):
+	@wraps(f)
+	def is_logged_in(*args, **kwargs):
+		if "user" in session:
+			return f(*args, **kwargs)
+		return flask.jsonify(success=False, message="You do not have access.")
+	return is_logged_in
 
 
 @app.route("/")
@@ -41,9 +57,10 @@ def main():
 	return flask.redirect(flask.url_for("login"))
 
 
-@app.route("/app", methods=["GET"])
+@app.route('/app/', defaults={'path': ''})
+@app.route('/app/<path:path>')
 @logged_in
-def single_app():
+def single_app(path):
 	return flask.render_template("app.html")
 
 
@@ -119,6 +136,13 @@ def add_quote():
 @is_admin
 def show_all_users():
 	return flask.render_template("user/all_users.html", users=[dict(username=a[0], admin=a[2]) for a in flask.g.db.execute("select * from User").fetchall()])
+
+
+@app.route("/api/all_users")
+@is_admin_api
+def get_all_users_api():
+	users=[dict(username=a[0], admin=a[2]) for a in flask.g.db.execute("select * from User").fetchall()]
+	return flask.jsonify(success=True, users=users)
 
 
 @app.route("/delete_all")
